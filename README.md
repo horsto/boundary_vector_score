@@ -1,2 +1,5 @@
-# debora_borderscore
-Transcription and tests of Debora's borderscore implementation
+## New border score 
+
+Tests and implementation of Debora's borderscore
+
+# WIP
