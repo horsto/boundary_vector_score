@@ -1,5 +1,7 @@
-## New border score 
+## Boundary vector score 
 
-Tests and implementation of Debora's borderscore
+Tests and implementation of Debora's boundary vector score.
 
-# WIP
+Contact: 
+Debora Ledergerber - dlederger@ethz.ch
+Horst Obenhaus - horst.obenhaus@ntnu.no
