@@ -1,4 +1,4 @@
-function [fields,allFields] = fieldDetection2D(map,varargin)
+function [bvs_x, bvs_y, allFields] = fieldDetection2D(map,varargin)
 % DETECT FIELDS AND CALCULATE BOUNDARY VECTOR SCORE
 
 % basic field detection mechanism written by Oyvind (like he uses in his
@@ -79,7 +79,7 @@ if fieldDetectionThresh < maxmap
 else
     IN = false(1,numel(h.XData));
 end
-
+close all 
 %%
 % Define matrix of fields and find connected regions
 nap = mapP1d'.*IN;
@@ -149,6 +149,8 @@ if p.addMap
 end
 allFields.numFields = numel(fields);
 [xScore,yScore] = getScores(fieldMap,p.doPlot,p.ax,p.r);
+bvs_x = xScore.sc;
+bvs_y = yScore.sc;
 allFields.xScore = xScore;
 allFields.yScore = yScore;
 
