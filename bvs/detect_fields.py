@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 
 
-def detect_fields(rmap, std_detect=1, std_include=2, minBin=16, show_plots=False):
+def detect_fields(rmap, std_detect=1, std_include=2, minBin=16, show_plots=False, debug=False):
     ''' 
     Detect fields
     Debora Ledergerber (dlederger@ethz.ch) & Øyvind Arne Hoydal 
@@ -25,6 +25,10 @@ def detect_fields(rmap, std_detect=1, std_include=2, minBin=16, show_plots=False
                     Number of standard deviations over median for field inclusion
     minBin       :  integer
                     minimum no of bins for field inclusion
+    show_plots   :  bool 
+                    Draw figure? 
+    debug        :  bool
+                    Show debug messages?
            
     Returns 
     -------
@@ -46,16 +50,19 @@ def detect_fields(rmap, std_detect=1, std_include=2, minBin=16, show_plots=False
     
     fieldDetectionThresh = mapMedian + std_detect * mapStd
     fieldInclusionThresh = mapMedian + std_include * mapStd
-    
+    if debug: 
+        print(f'fieldDetectionThresh: {fieldDetectionThresh}\nfieldInclusionThresh: {fieldInclusionThresh}')
+
     ratemap_det = ratemap.copy()
     ratemap_det[ratemap_det<fieldDetectionThresh] = 0
     
     thresh_map = ratemap_det.copy()
     thresh_map[thresh_map>0] = 1
-    labels = morphology.label(thresh_map, connectivity=2) # This is what Matlab does when calling bwconncomp()
-    
+
+    labeled_img  = morphology.label(thresh_map, connectivity=1) 
+
     # Measure detected fields
-    regions = measure.regionprops(labels)
+    regions = measure.regionprops(labeled_img)
     regions = np.array(regions)
 
     # Extract maxima and lengths

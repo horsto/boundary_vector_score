@@ -26,6 +26,7 @@ def calc_bv_score(fieldmap, r=.5):
     yDim = fieldmap.shape[0]
     nMap = np.size(fieldmap)
     
+    # Create an array of nans
     nan_map = np.zeros_like(fieldmap)
     nan_map[nan_map==0] = np.nan
 
