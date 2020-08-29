@@ -1,4 +1,4 @@
-### Debora's borderscore 
+### Debora's field detection 
 import numpy as np
 
 from skimage import measure, morphology
@@ -10,9 +10,10 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 
 
-def detect_fields(rmap, std_detect=1, std_include=2, minBin=16, show_plots=True):
+def detect_fields(rmap, std_detect=1, std_include=2, minBin=16, show_plots=False):
     ''' 
     Detect fields
+    Debora Ledergerber (dlederger@ethz.ch) & Øyvind Arne Hoydal 
     
     Parameters
     ----------
@@ -51,7 +52,7 @@ def detect_fields(rmap, std_detect=1, std_include=2, minBin=16, show_plots=True)
     
     thresh_map = ratemap_det.copy()
     thresh_map[thresh_map>0] = 1
-    labels = morphology.label(thresh_map, connectivity=2)
+    labels = morphology.label(thresh_map, connectivity=2) # This is what Matlab does when calling bwconncomp()
     
     # Measure detected fields
     regions = measure.regionprops(labels)
@@ -67,7 +68,7 @@ def detect_fields(rmap, std_detect=1, std_include=2, minBin=16, show_plots=True)
     
     # Create a map from the remaining fields
     mapOnes = np.zeros_like(ratemap_det)
-    for no,field in enumerate(remaining_fields):
+    for field in remaining_fields:
         mapOnes[field.coords[:,0],field.coords[:,1]] = 1
         
     if show_plots:
@@ -87,74 +88,3 @@ def detect_fields(rmap, std_detect=1, std_include=2, minBin=16, show_plots=True)
     return mapOnes, remaining_fields
 
 
-
-def calc_borderscore(fieldmap, r=.5):
-    ''' 
-    Calculate Debora's borderscore
-    
-    Parameters
-    ----------
-    fieldmap : 2-dim np.array
-               (Filtered) field map where in-field == 1, else 0
-               
-    r        : float (default = 0.5)
-               r-factor (weighing contribution of extra fields in diminishing score)
-               If 0, other fields do not contribute to score 
-               
-    TODO: Experiment with i (the width over the overlay bar)
-    TODO: Extract position of bar maximum / distance from wall 
-    '''
-    assert isinstance(fieldmap,np.ndarray) and len(fieldmap.shape) == 2, 'Please feed in a 2 dimensional numpy array'
-    assert 0 <= r <= 1, 'Parameter "r" has to be a float in between 0 and 1'
-    
-    xDim = fieldmap.shape[1]
-    yDim = fieldmap.shape[0]
-    nMap = np.size(fieldmap)
-    
-    nan_map = np.zeros_like(fieldmap)
-    nan_map[nan_map==0] = np.nan
-
-    # ... in x
-    # Create "result bank"
-    noOvl = nan_map.copy()
-    isOvl = nan_map.copy()
-
-    i = 1
-    for j in range(yDim-i):
-        # Create a horizontal bar
-        dummyMap = np.zeros_like(fieldmap)
-        dummyMap[j:j+i,:xDim] = 1
-        # ... and count how many ones you created
-        nDum    = len(dummyMap[dummyMap==1])
-
-        # Add bar to original map
-        sumMaps = (dummyMap + fieldmap)
-        noOvl[i,j] = len(sumMaps[sumMaps==1])/(nMap-nDum)
-        isOvl[i,j] = len(sumMaps[sumMaps==2])/nDum
-    # Score in x
-    matchScore = isOvl - r*noOvl
-    borderscore_x = np.nanmax(matchScore)
-    
-    # ... in y
-    # Create "result bank"
-    noOvl = nan_map.copy()
-    isOvl = nan_map.copy()
-    
-    i = 1
-    for j in range(xDim-i):
-        # Create a vertical bar
-        dummyMap = np.zeros_like(fieldmap)
-        dummyMap[:yDim, j:j+i] = 1
-        # ... and count how many ones you created
-        nDum    = len(dummyMap[dummyMap==1])
-
-        # Add bar to original map
-        sumMaps = (dummyMap + fieldmap)
-        noOvl[i,j] = len(sumMaps[sumMaps==1])/(nMap-nDum)
-        isOvl[i,j] = len(sumMaps[sumMaps==2])/nDum
-        
-    # Score in y
-    matchScore = isOvl - r*noOvl
-    borderscore_y = np.nanmax(matchScore)
-    
-    return np.max([borderscore_x, borderscore_y]), borderscore_x, borderscore_y
