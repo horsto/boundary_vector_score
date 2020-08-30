@@ -155,13 +155,18 @@ class BVScore(dj.Computed):
         if method not in ['opexebo','bvs']:
             raise NotImplementedError(f'Method "{method}" does not have a matching score calculation routine')
         
-        if method == 'opexebo':
-            fieldmap = (Ratemap & key).fetch1('fields_map')
-            fieldmap = fieldmap.copy()
-            fieldmap[fieldmap>0] = 1
-        elif method == 'bvs':
-            fieldmap = (BVField & key).fetch1('fields_map')
-        
+        try:
+            if method == 'opexebo':
+                fieldmap = (Ratemap & key).fetch1('fields_map')
+                fieldmap = fieldmap.copy()
+                fieldmap[fieldmap>0] = 1
+            elif method == 'bvs':
+                fieldmap = (BVField & key).fetch1('fields_map')
+        except: 
+            # Whatever, just catch for now ... 
+             self.insert1(key)
+             return 
+             
         if (fieldmap==0).all():
             # Empty fieldmap! 
             self.insert1(key)
