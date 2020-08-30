@@ -24,7 +24,7 @@ def detect_fields(rmap, std_detect=1, std_include=2, minBin=16, show_plots=False
     std_include      :  float 
                         Number of standard deviations over median for field inclusion
     minBin           :  integer
-                        minimum no of bins for field inclusion
+                        Minimum no of bins for field inclusion
     show_plots       :  bool 
                         Draw figure? 
     debug            :  bool

@@ -23,26 +23,29 @@ def calc_bv_score(fieldmap, r=.5, barwidth_max=1, show_plots=False, debug=False)
                
     Returns 
     -------
-    max_score    : float
-                   Maximum of x (horizontal bars) and y (vertical bars) score 
-    results_x    : dictionary
-                   'score'    : Maximum score for bars spanning x (horizontal bars)
-                   'barwidth' : barwidth at maximum 
-                   'yPos'     : bar position at maximum (center of bar)
-                   'yPos_rel' : relative bar position at maximum (center of bar)
-                   'barMap'   : barMap (streak of ones) at maximum 
-    results_y    : dictionary
-                   'score'    : Maximum score for bars spanning y (vertical bars)
-                   'barwidth' : barwidth at maximum 
-                   'xPos'     : bar position at maximum (center of bar)
-                   'xPos_rel' : relative bar position at maximum (center of bar)
-                   'barMap'   : barMap (streak of ones) at maximum 
-    show_plots   : bool 
-                   Draw figure? 
-    debug        : bool
-                   Show debug messages?
-
-    '''
+    max_score       : float
+                      Maximum of x (horizontal bars) and y (vertical bars) score 
+    results_x       : dictionary
+                      'score_x'   : Maximum score for bars spanning x (horizontal bars)
+                      'bar_width' : barwidth at maximum 
+                      'ypos'      : bar position at maximum (center of bar)
+                      'ypos_rel'  : relative bar position at maximum (center of bar)
+                      'bar_map'   : barMap (streak of ones) at maximum 
+    results_y       : dictionary
+                      'score_y'   : Maximum score for bars spanning y (vertical bars)
+                      'bar_width' : barwidth at maximum 
+                      'xpos'      : bar position at maximum (center of bar)
+                      'xpos_rel'  : relative bar position at maximum (center of bar)
+                      'bar_map'   : barMap (streak of ones) at maximum 
+    max_orientation : string or None
+                      Maximum orientation, either 'horizontal' or 'vertical' 
+                      Returns None if exactly the same in both directions
+    show_plots      : bool 
+                      Draw figure? 
+    debug           : bool
+                      Show debug messages?
+   
+    '''   
     assert isinstance(fieldmap,np.ndarray) and len(fieldmap.shape) == 2, 'Please feed in a 2 dimensional numpy array for "fieldmap"'
     assert (np.max(fieldmap) == 1) and (np.min(fieldmap) == 0), 'Please make sure "fieldmap" is a 2D array where field coordinates = 1 and rest = 0' 
     assert 0 <= r <= 1, 'Parameter "r" has to be a float in between 0 and 1'
@@ -92,11 +95,11 @@ def calc_bv_score(fieldmap, r=.5, barwidth_max=1, show_plots=False, debug=False)
                     print(f'Score increased to {score: .3f} | yPos: {yPos} (barwidth: {barwidth})')
 
                 score_max = score
-                results_x['score']     = score
-                results_x['barwidth']  = barwidth
-                results_x['yPos']      = yPos + (barwidth/2)
-                results_x['yPos_rel']  = results_x['yPos']/yDim
-                results_x['barMap']    = barMap   
+                results_x['score_x']    = score
+                results_x['bar_width']  = barwidth
+                results_x['ypos']       = yPos + (barwidth/2)
+                results_x['ypos_rel']   = results_x['ypos']/yDim
+                results_x['bar_map']    = barMap   
 
     #### Bars spanning Y ############################################################################
     if debug:
@@ -121,28 +124,35 @@ def calc_bv_score(fieldmap, r=.5, barwidth_max=1, show_plots=False, debug=False)
                     print(f'Score increased to {score: .3f} | xPos: {xPos} (barwidth: {barwidth})')
 
                 score_max = score
-                results_y['score']     = score
-                results_y['barwidth']  = barwidth
-                results_y['xPos']      = xPos + (barwidth/2)
-                results_y['xPos_rel']  = results_y['xPos']/xDim
-                results_y['barMap']    = barMap   
+                results_y['score_y']   = score
+                results_y['bar_width'] = barwidth
+                results_y['xpos']      = xPos + (barwidth/2)
+                results_y['xpos_rel']  = results_y['xpos']/xDim
+                results_y['bar_map']   = barMap   
 
 
     if show_plots:
         # Draw figure of barMaps at maximum score for horizontal and vertical 
         figure = plt.figure(figsize=(10,5))
         ax = figure.add_subplot(121)
-        ax.imshow(results_x['barMap'])
-        ax.set_title('Horizontal bar max: {:.2f}'.format(results_x['score']))
+        ax.imshow(results_x['bar_map'])
+        ax.set_title('Horizontal bar max: {:.2f}'.format(results_x['score_x']))
         ax = figure.add_subplot(122)
-        ax.imshow(results_y['barMap'])
-        ax.set_title('Vertical bar max: {:.2f}'.format(results_y['score']))
+        ax.imshow(results_y['bar_map'])
+        ax.set_title('Vertical bar max: {:.2f}'.format(results_y['score_y']))
         sns.despine(left=True,bottom=True)
 
-    max_score = np.max([results_x['score'], results_y['score']])
+    max_score = np.max([results_x['score_x'], results_y['score_y']])
     
+    if results_x['score_x'] > results_y['score_y']:
+        max_orientation = 'horizontal'
+    elif results_x['score_x'] < results_y['score_y']:
+        max_orientation = 'vertical'
+    else: 
+        max_orientation = None
+
     if debug:
-        print(f'\nFinal boundary vector score: {max_score}')
+        print(f'\nFinal boundary vector score: {max_score} ({max_orientation})')
+    
 
-
-    return max_score, results_x, results_y
+    return max_score, results_x, results_y, max_orientation
