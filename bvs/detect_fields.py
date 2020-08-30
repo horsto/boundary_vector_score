@@ -17,25 +17,26 @@ def detect_fields(rmap, std_detect=1, std_include=2, minBin=16, show_plots=False
     
     Parameters
     ----------
-    rmap         :  2-dim np.array
-                    (Unprocessed) ratemap. Zero occupancy (nan) are converted to zeros
-    std_detect   :  float
-                    Number of standard deviations over median for field detection 
-    std_include  :  float 
-                    Number of standard deviations over median for field inclusion
-    minBin       :  integer
-                    minimum no of bins for field inclusion
-    show_plots   :  bool 
-                    Draw figure? 
-    debug        :  bool
-                    Show debug messages?
+    rmap             :  2-dim np.array
+                        (Unprocessed) ratemap. Zero occupancy (nan) are converted to zeros
+    std_detect       :  float
+                        Number of standard deviations over median for field detection 
+    std_include      :  float 
+                        Number of standard deviations over median for field inclusion
+    minBin           :  integer
+                        minimum no of bins for field inclusion
+    show_plots       :  bool 
+                        Draw figure? 
+    debug            :  bool
+                        Show debug messages?
            
     Returns 
     -------
     
-    fieldmap     : 2-dim np.array
-                   Array in shape of rmap, where detected fields = 1, else 0
-    regions      : skimage.measure regionprops output of filtered (remaining) fields
+    fieldmap         : 2-dim np.array
+                       Array in shape of rmap, where detected fields = 1, else 0
+    remaining_fields : np.array
+                       skimage.measure regionprops output of filtered (remaining) fields
     
     '''
     assert isinstance(rmap,np.ndarray) and len(rmap.shape) == 2, 'Please feed in a 2 dimensional numpy array'
