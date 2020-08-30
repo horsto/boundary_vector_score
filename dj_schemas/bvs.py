@@ -64,7 +64,9 @@ class BVField(dj.Computed):
         rm      = np.ma.array(ratemap_entry['ratemap'], mask = ratemap_entry['mask_rm'])
         rm_nans = np.ma.filled(rm, fill_value=np.nan).astype(np.float64)
         
-        key['fields_map'], remaining_fields = detect_fields(rm_nans, minBin=16, show_plots=False, debug=False)
+        key['fields_map'], remaining_fields = detect_fields(rm_nans, minBin=params['min_bin'], \
+                                                    std_include=params['std_include'], std_detect=params['std_detect'],\
+                                                    show_plots=False, debug=False)
         key['no_fields'] = len(remaining_fields)
         
         self.insert1(key)
