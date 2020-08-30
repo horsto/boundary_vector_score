@@ -28,14 +28,14 @@ def calc_bv_score(fieldmap, r=.5, barwidth_max=1, show_plots=False, debug=False)
     results_x    : dictionary
                    'score'    : Maximum score for bars spanning x (horizontal bars)
                    'barwidth' : barwidth at maximum 
-                   'yPos'     : bar position at maximum
-                   'yPos_rel' : relative bar position at maximum
+                   'yPos'     : bar position at maximum (center of bar)
+                   'yPos_rel' : relative bar position at maximum (center of bar)
                    'barMap'   : barMap (streak of ones) at maximum 
     results_y    : dictionary
                    'score'    : Maximum score for bars spanning y (vertical bars)
                    'barwidth' : barwidth at maximum 
-                   'xPos'     : bar position at maximum
-                   'xPos_rel' : relative bar position at maximum
+                   'xPos'     : bar position at maximum (center of bar)
+                   'xPos_rel' : relative bar position at maximum (center of bar)
                    'barMap'   : barMap (streak of ones) at maximum 
     show_plots   : bool 
                    Draw figure? 
