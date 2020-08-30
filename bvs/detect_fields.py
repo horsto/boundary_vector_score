@@ -33,7 +33,7 @@ def detect_fields(rmap, std_detect=1, std_include=2, minBin=16, show_plots=False
     Returns 
     -------
     
-    mapOnes      : 2-dim np.array
+    fieldmap     : 2-dim np.array
                    Array in shape of rmap, where detected fields = 1, else 0
     regions      : skimage.measure regionprops output of filtered (remaining) fields
     
@@ -88,9 +88,9 @@ def detect_fields(rmap, std_detect=1, std_include=2, minBin=16, show_plots=False
         print(f'{len(remaining_fields)} fields remain\n')
     
     # Create a map from the remaining fields
-    mapOnes = np.zeros_like(ratemap_det)
+    fieldmap = np.zeros_like(ratemap_det)
     for field in remaining_fields:
-        mapOnes[field.coords[:,0],field.coords[:,1]] = 1
+        fieldmap[field.coords[:,0],field.coords[:,1]] = 1
         
     if show_plots:
         # Generate figure
@@ -102,10 +102,10 @@ def detect_fields(rmap, std_detect=1, std_include=2, minBin=16, show_plots=False
         ax2.imshow(ratemap_det)
         ax2.set_title('Detected fields')
         ax3 = figure.add_subplot(133)
-        ax3.imshow(mapOnes)
+        ax3.imshow(fieldmap)
         ax3.set_title('Filtered fields')
         sns.despine(left=True,bottom=True)
         
-    return mapOnes, remaining_fields
+    return fieldmap, remaining_fields
 
 
