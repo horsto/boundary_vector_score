@@ -47,31 +47,45 @@ def detect_fields(rmap, std_detect=1, std_include=2, minBin=16, show_plots=False
     mapStd    = np.nanstd(rmap)
     # Convert nans to zeros
     ratemap   = np.nan_to_num(rmap)
-    
+    # Get thresholds
     fieldDetectionThresh = mapMedian + std_detect * mapStd
     fieldInclusionThresh = mapMedian + std_include * mapStd
     if debug: 
-        print(f'fieldDetectionThresh: {fieldDetectionThresh}\nfieldInclusionThresh: {fieldInclusionThresh}')
+        print('Thresholds\n----------')
+        print(f'fieldDetectionThresh: {fieldDetectionThresh}\nfieldInclusionThresh: {fieldInclusionThresh}\nminBin: {minBin}\n')
 
     ratemap_det = ratemap.copy()
     ratemap_det[ratemap_det<fieldDetectionThresh] = 0
     
+    # Convert field map to binary map [0,1]
     thresh_map = ratemap_det.copy()
     thresh_map[thresh_map>0] = 1
 
-    labeled_img  = morphology.label(thresh_map, connectivity=1) 
+    # Find connected components
+    labeled_img  = morphology.label(thresh_map, connectivity=2) 
 
     # Measure detected fields
     regions = measure.regionprops(labeled_img)
     regions = np.array(regions)
 
+    if debug: 
+        print('Fields\n------')
+        print(f'Detected {len(regions)} fields')
+
     # Extract maxima and lengths
     maxima_regions = np.array([np.max(ratemap_det[regions[i].coords[:,0], regions[i].coords[:,1]]) for i in range(len(regions))])
     len_regions    = np.array([len(regions[i].coords) for i in range(len(regions))])
     
+    if debug: 
+        print(f'Maxima of detected regions:   {maxima_regions}')
+        print(f'Length of detected regions:   {len_regions}')
+
     # Apply filtering
-    filtered_field_idxs = np.where((len_regions>minBin) & (maxima_regions>fieldInclusionThresh))[0]
+    filtered_field_idxs = np.where((len_regions>=minBin) & (maxima_regions>=fieldInclusionThresh))[0]
     remaining_fields    = regions[filtered_field_idxs]
+
+    if debug:
+        print(f'{len(remaining_fields)} fields remain\n')
     
     # Create a map from the remaining fields
     mapOnes = np.zeros_like(ratemap_det)
