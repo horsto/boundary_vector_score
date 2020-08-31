@@ -9,6 +9,7 @@ def calc_bv_score(fieldmap, r=.5, barwidth_max=1, show_plots=False, debug=False)
     ''' 
     Calculate boundary vector (bv) score
     Debora Ledergerber, dlederger@ethz.ch
+    Python integration by Horst Obenhaus (horst.obenhaus@ntnu.no)
     
     Parameters
     ----------

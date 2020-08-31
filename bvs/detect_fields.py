@@ -14,6 +14,7 @@ def detect_fields(rmap, std_detect=1, std_include=2, minBin=16, show_plots=False
     ''' 
     Detect fields
     Debora Ledergerber (dlederger@ethz.ch) & Øyvind Arne Hoydal 
+    Python integration by Horst Obenhaus (horst.obenhaus@ntnu.no)
     
     Parameters
     ----------
