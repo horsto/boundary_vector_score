@@ -1,0 +1,113 @@
+<svg height="231pt" viewBox="0.00 0.00 293.95 231.50" width="294pt" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g class="graph" id="graph0" transform="scale(1 1) rotate(0) translate(4 227.499)">
+<title>%3</title>
+<polygon fill="#ffffff" points="-4,4 -4,-227.499 289.9487,-227.499 289.9487,4 -4,4" stroke="transparent"/>
+<!-- BVScoreFieldMethod -->
+<g class="node" id="node1">
+<title>BVScoreFieldMethod</title>
+<g id="a_node1"><a xlink:title="bv_field_dect_method ">
+<polygon fill="#000000" fill-opacity="0.125490" points="286.1959,-152.499 175.2093,-152.499 175.2093,-117.499 286.1959,-117.499 286.1959,-152.499" stroke="transparent"/>
+<text fill="#000000" font-family="arial" font-size="10.00" text-anchor="start" text-decoration="underline" x="183.4565" y="-133.7485">BVScoreFieldMethod</text>
+</a>
+</g>
+</g>
+<!-- ShuffledBVS -->
+<g class="node" id="node2">
+<title>ShuffledBVS</title>
+<g id="a_node2"><a xlink:title="→ FilteredSpikes.proj(signal_dataset=&quot;dataset_name&quot;)→ Tracking.OpenField.proj(tracking_dataset=&quot;dataset_name&quot;)→ ShuffleParams→ BVField→ BVScoreFieldMethod------------------------------number_shuffles      shuffling_offsets    INDEX (shuffling_offsets)">
+<ellipse cx="128.7026" cy="-68.499" fill="#ff0000" fill-opacity="0.125490" rx="12.9734" ry="13" stroke="#ff0000" stroke-opacity="0.125490"/>
+<text fill="#7f0000" font-family="arial" font-size="12.00" text-anchor="middle" x="128.7026" y="-65.7984">ShuffledBVS</text>
+</a>
+</g>
+</g>
+<!-- BVScoreFieldMethod&#45;&gt;ShuffledBVS -->
+<g class="edge" id="edge1">
+<title>BVScoreFieldMethod-&gt;ShuffledBVS</title>
+<path d="M203.6363,-117.3528C182.7434,-103.7315 154.92,-85.5917 139.7373,-75.6932" fill="none" stroke="#000000" stroke-opacity="0.250980" stroke-width=".75"/>
+</g>
+<!-- BVScore -->
+<g class="node" id="node6">
+<title>BVScore</title>
+<g id="a_node6"><a xlink:title="→ Ratemap→ BVField→ BVScoreFieldMethod------------------------------bvs=null             orientation=null     ">
+<ellipse cx="225.7026" cy="-68.499" fill="#ff0000" fill-opacity="0.125490" rx="13.0734" ry="13" stroke="#ff0000" stroke-opacity="0.125490"/>
+<text fill="#7f0000" font-family="arial" font-size="12.00" text-anchor="middle" x="225.7026" y="-65.7984">BVScore</text>
+</a>
+</g>
+</g>
+<!-- BVScoreFieldMethod&#45;&gt;BVScore -->
+<g class="edge" id="edge2">
+<title>BVScoreFieldMethod-&gt;BVScore</title>
+<path d="M229.3627,-117.1782C228.5181,-105.9442 227.4464,-91.6907 226.6813,-81.5159" fill="none" stroke="#000000" stroke-opacity="0.250980" stroke-width=".75"/>
+</g>
+<!-- ShuffledBVS.BVS -->
+<g class="node" id="node8">
+<title>ShuffledBVS.BVS</title>
+<g id="a_node8"><a xlink:title="→ ShuffledBVS------------------------------bvs_99               bvs_95               bvs_shuffles         INDEX (bvs_shuffles)">
+<polygon fill="transparent" points="176.5147,-19.7551 80.8906,-19.7551 80.8906,.2561 176.5147,.2561 176.5147,-19.7551" stroke="transparent"/>
+<text fill="#000000" font-family="arial" font-size="10.00" text-anchor="middle" x="128.7026" y="-7.499">ShuffledBVS.BVS</text>
+</a>
+</g>
+</g>
+<!-- ShuffledBVS&#45;&gt;ShuffledBVS.BVS -->
+<g class="edge" id="edge3">
+<title>ShuffledBVS-&gt;ShuffledBVS.BVS</title>
+<path d="M128.7026,-55.4606C128.7026,-44.6431 128.7026,-29.4915 128.7026,-19.6491" fill="none" stroke="#000000" stroke-opacity="0.250980" stroke-width="2"/>
+</g>
+<!-- BVScoreParams -->
+<g class="node" id="node3">
+<title>BVScoreParams</title>
+<g id="a_node3"><a xlink:title="bvscore_params_id    ------------------------------r_factor             barwidth_max         ">
+<polygon fill="#000000" fill-opacity="0.125490" points="279.6187,-223.499 189.7866,-223.499 189.7866,-188.499 279.6187,-188.499 279.6187,-223.499" stroke="transparent"/>
+<text fill="#000000" font-family="arial" font-size="10.00" text-anchor="start" text-decoration="underline" x="197.7446" y="-204.7485">BVScoreParams</text>
+</a>
+</g>
+</g>
+<!-- BVFieldParams -->
+<g class="node" id="node4">
+<title>BVFieldParams</title>
+<g id="a_node4"><a xlink:title="bvfield_params_id    ------------------------------std_detect           std_include          min_bin              ">
+<polygon fill="#000000" fill-opacity="0.125490" points="171.6717,-223.499 85.7336,-223.499 85.7336,-188.499 171.6717,-188.499 171.6717,-223.499" stroke="transparent"/>
+<text fill="#000000" font-family="arial" font-size="10.00" text-anchor="start" text-decoration="underline" x="93.9688" y="-204.7485">BVFieldParams</text>
+</a>
+</g>
+</g>
+<!-- BVField -->
+<g class="node" id="node7">
+<title>BVField</title>
+<g id="a_node7"><a xlink:title="→ Ratemap→ BVFieldParams------------------------------no_fields=null       fields_map=null      INDEX (fields_map)">
+<ellipse cx="128.7026" cy="-134.999" fill="#ff0000" fill-opacity="0.125490" rx="13.0039" ry="13" stroke="#ff0000" stroke-opacity="0.125490"/>
+<text fill="#7f0000" font-family="arial" font-size="12.00" text-anchor="middle" x="128.7026" y="-132.2984">BVField</text>
+</a>
+</g>
+</g>
+<!-- BVFieldParams&#45;&gt;BVField -->
+<g class="edge" id="edge4">
+<title>BVFieldParams-&gt;BVField</title>
+<path d="M128.7026,-188.4485C128.7026,-175.9648 128.7026,-159.4625 128.7026,-148.1146" fill="none" stroke="#000000" stroke-opacity="0.250980" stroke-width=".75"/>
+</g>
+<!-- ShuffleParams -->
+<g class="node" id="node5">
+<title>ShuffleParams</title>
+<g id="a_node5"><a xlink:title="shuffle_params_id    ------------------------------number_shuffles      margin_seconds       break_seconds        : float                        # Break in seconds between sync samples (→ non-continuous sampling of sync stream)">
+<polygon fill="#000000" fill-opacity="0.125490" points="81.6089,-152.499 -.2037,-152.499 -.2037,-117.499 81.6089,-117.499 81.6089,-152.499" stroke="transparent"/>
+<text fill="#000000" font-family="arial" font-size="10.00" text-anchor="start" text-decoration="underline" x="8" y="-133.7485">ShuffleParams</text>
+</a>
+</g>
+</g>
+<!-- ShuffleParams&#45;&gt;ShuffledBVS -->
+<g class="edge" id="edge5">
+<title>ShuffleParams-&gt;ShuffledBVS</title>
+<path d="M64.285,-117.1782C81.7986,-103.9436 104.8574,-86.5184 118.1042,-76.5081" fill="none" stroke="#000000" stroke-opacity="0.250980" stroke-width=".75"/>
+</g>
+<!-- BVField&#45;&gt;ShuffledBVS -->
+<g class="edge" id="edge6">
+<title>BVField-&gt;ShuffledBVS</title>
+<path d="M128.7026,-121.8608C128.7026,-110.2024 128.7026,-93.2601 128.7026,-81.61" fill="none" stroke="#000000" stroke-opacity="0.250980" stroke-width=".75"/>
+</g>
+<!-- BVField&#45;&gt;BVScore -->
+<g class="edge" id="edge7">
+<title>BVField-&gt;BVScore</title>
+<path d="M139.454,-127.6283C158.0993,-114.8456 196.2243,-88.7084 214.9032,-75.9028" fill="none" stroke="#000000" stroke-opacity="0.250980" stroke-width=".75"/>
+</g>
+</g>
+</svg>

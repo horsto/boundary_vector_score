@@ -8,3 +8,7 @@ Horst Obenhaus - horst.obenhaus@ntnu.no
 <br>
 <br>
 ![Example cells](images/example_cells.png)
+
+---
+
+![Current schema](dj_schemas/erd.svg)

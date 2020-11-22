@@ -105,8 +105,8 @@ class BVScoreFieldMethod(dj.Lookup):
     bv_field_dect_method     : enum('opexebo','bvs')  # Specifies how fields were extracted
     """  
     contents = [
-      ['opexebo'],
-      ['bvs']
+        ['opexebo'],
+        ['bvs']
            ]
 
 @borderscore_schema
@@ -115,6 +115,7 @@ class BVScore(dj.Computed):
     # Boundary vector score (BVS)
     -> Ratemap
     -> BVField
+    -> BVScoreParams
     -> BVScoreFieldMethod
     ---
     bvs   = NULL               : double         # Boundary vector score (BVS)
@@ -152,7 +153,7 @@ class BVScore(dj.Computed):
         # Implement two methods for field detection 
         # 1. opexebo (raw ratemap fieldmaps entry)
         # 2. bvfield 
-        
+        params = (BVScoreParams & key).fetch1()
         method = (BVScoreFieldMethod & key).fetch1('bv_field_dect_method')
         if method not in ['opexebo','bvs']:
             raise NotImplementedError(f'Method "{method}" does not have a matching score calculation routine')
@@ -166,15 +167,14 @@ class BVScore(dj.Computed):
                 fieldmap = (BVField & key).fetch1('fields_map')
         except: 
             # Whatever, just catch for now ... 
-             self.insert1(key)
-             return 
-             
-        if (fieldmap==0).all():
-            # Empty fieldmap! 
             self.insert1(key)
             return 
 
-        params = (BVScoreParams & key).fetch1()
+        if (fieldmap==0).all() or (fieldmap == 1).all():
+            # Empty fieldmap or field detection didn't work! 
+            self.insert1(key)
+            return 
+
         key['bvs'], bvs_x, bvs_y, key['orientation'] = calc_bv_score(fieldmap, r=params['r_factor'], \
                                                 barwidth_max=params['barwidth_max'], show_plots=False, debug=False)
         
