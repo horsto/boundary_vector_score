@@ -51,9 +51,10 @@ class BVField(dj.Computed):
         field_area                 : int             # Area in number of bins
         field_bbox                 : blob@imgstore   # Field bounding box
         """
+        
     @property
     def key_source(self):
-        return super().key_source  & 'field_params_id = "A"' 
+        return super().key_source  & 'bvfield_params_id = "A"' 
         # We just want a ratemap + do not care about field detection 
     
     def make(self, key):
@@ -113,7 +114,6 @@ class BVScoreFieldMethod(dj.Lookup):
 class BVScore(dj.Computed):
     definition = """
     # Boundary vector score (BVS)
-    -> Ratemap
     -> BVField
     -> BVScoreParams
     -> BVScoreFieldMethod
@@ -146,7 +146,7 @@ class BVScore(dj.Computed):
     
     @property
     def key_source(self):
-        return super().key_source  & 'field_params_id = "A"' 
+        return super().key_source & 'bvfield_params_id = "A"' 
         # We do not care about other field detection parameters in opexebo right now
         
     def make(self, key):
