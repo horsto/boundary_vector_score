@@ -11,7 +11,8 @@ schema.spawn_missing_classes()
 
 # Load personal schema 
 borderscore_schema = dj.schema('user_horsto_borderscore')
-borderscore_schema.spawn_missing_classes()
+# Schema components
+from dj_schemas.bvs import BVFieldParams, BVScoreParams, BVScoreFieldMethod
 
 from bvs.detect_fields import detect_fields
 from bvs.bv_score import calc_bv_score
@@ -26,11 +27,15 @@ class ShuffledBVS(dj.Computed):
     -> FilteredSpikes.proj(signal_dataset = 'dataset_name')
     -> Tracking.OpenField.proj(tracking_dataset = 'dataset_name')
     -> ShuffleParams
-    -> BVField
+    -> SignalTrackingParams
+    -> MapParams
+    -> BVFieldParams
+    -> BVScoreParams
     -> BVScoreFieldMethod
     ---
-    number_shuffles            :    int                   # Total number of shuffles (can vary from expected number)
-    shuffling_offsets          :    blob@imgstore         # Shuffling offsets
+    -> [nullable] Sync.proj(sync_dataset_frames_imaging = 'dataset_name', sync_name_frames_imaging  = 'sync_name')
+    number_shuffles            :  int            # Total number of shuffles (can vary from expected number)
+    shuffling_offsets          :  blob@imgstore  # Shuffling offsets
     """
 
     class BVS(dj.Part):
@@ -38,11 +43,15 @@ class ShuffledBVS(dj.Computed):
         # Shuffled bvs  
         -> master
         --- 
-        bvs_99                 :  double         #  Information rate 99th percentile
-        bvs_95                 :  double         #  Information rate 95th percentile
-        bvs_shuffles           :  blob@imgstore  #  Individual shuffles information rate   
+        bvs_99                 :  double          #  BVS 99th percentile
+        bvs_95                 :  double          #  BVS 95th percentile
+        bvs_shuffles           :  blob@imgstore   #  Individual shuffles BVS 
         """
 
+    @property
+    def key_source(self):
+        return super().key_source & 'bvfield_params_id="A"' & 'bvscore_params_id="A"' & 'bv_field_dect_method="bvs"'
+        # Constrain to some parameters for now 
 
     def make(self,key):
 
@@ -60,23 +69,31 @@ class ShuffledBVS(dj.Computed):
 
 
         shuffle_params = (ShuffleParams & key).fetch1()
+        
         st_params = {}
-        st_params['speed_cutoff_low'], st_params['speed_cutoff_high'], st_time_offset = (SignalTrackingParams & key).fetch1(
+        st_params['speed_cutoff_low'], st_params['speed_cutoff_high'], time_offset = (SignalTrackingParams & key).fetch1(
                                                                     'speed_cutoff_low', 'speed_cutoff_high', 'time_offset')
 
         spikes   = (FilteredSpikes.proj(signal_dataset='dataset_name', spikes='filtered_spikes')
                     & key).fetch1('spikes')
-        tracking = (Tracking.OpenField * Tracking.proj(tracking_dataset='dataset_name')
+        tracking_ = (Tracking.OpenField * Tracking.proj(tracking_dataset='dataset_name')
                     & key).fetch1()
 
-        center_y, center_plane = (Cell.Rois.proj(..., signal_dataset='dataset_name') & key).fetch1(
-                    'center_y', 'center_plane')
-        num_planes = (Tif.SI & (Session & key)).fetch1('num_scanning_depths')
+        center_y, center_plane, proj_mean_img = ((Projection.proj('mean_image') * Cell.Rois).proj(
+                    ..., signal_dataset='dataset_name') & key).fetch1('center_y', 'center_plane', 'mean_image')
+        num_planes, frame_rate_si, seconds_per_line, width_SI, height_SI = (Tif.SI & (Session & key)).fetch1(
+                    'num_scanning_depths', 'framerate', 'seconds_per_line', 'width_scanimage', 'height_scanimage')
+
+        # Special case where the SI image shape is not the same with the projection image shape
+        # - suggesting the image has been cropped prior to suite2p analysis
+        # - thus, the "center_y" is no longer accurate -> using the middle line for "center_y"
+        if proj_mean_img.shape != (width_SI, height_SI):
+            center_y = int(height_SI/2)
 
         # Ratemap 
         occupancy_entry  = (Occupancy & key).fetch1()
         ratemap_params   = (MapParams & key).fetch1()
-        field_params     = (FieldParams & key).fetch1()
+        #field_params     = (FieldParams & key).fetch1() # Skipped for now - opexebo field detection
 
         # BV Field method 
         bvs_field_params =  (BVFieldParams & key).fetch1()
@@ -88,51 +105,50 @@ class ShuffledBVS(dj.Computed):
         # Experiment Type
         experiment_type   = (Session & key).fetch1('experiment_type')
 
-
         # Retrieve Sync
-        if (TrackingRaw & key).fetch1('sync'):
-            sync_data_frames, sample_rate_frames = (MetaSession.Setup * Setup.Sync \
-                                                  * Sync & 'generic_name = "frames_imaging"' & key).fetch1(\
-                                                  'sync_data', 'sample_rate')
-            sync_data_track = (MetaSession.Setup * Setup.Sync \
-                                                 * Sync & 'generic_name = "Tracking2LED"' & key).fetch1('sync_data')
+        # 1. Imaging
+        sync_data_frames, sample_rate_sync, key['sync_dataset_frames_imaging'], key['sync_name_frames_imaging'] = \
+                                                (MetaSession.Setup * Setup.Sync * Sync \
+                                                & 'generic_name = "frames_imaging"' & key).fetch1(
+                                                'sync_data', 'sample_rate', 'dataset_name', 'sync_name')
 
+        # 2. Tracking
+        # Is dataset deep lab cut? if yes, load as 
+        # -> 'generic_name = "TrackingDLC"', otherwise
+        # -> 'generic_name = "Tracking2LED"' 
+        tracking_type = (Dataset & 'dataset_name = "{}"'.format(key['tracking_dataset'])).fetch1('datasettype')
+        if tracking_type == 'DLC_tracking':
+            tracking_generic = 'TrackingDLC'
+        elif 'Tracking2D_2LED' in tracking_type:
+            tracking_generic = 'Tracking2LED'
         else:
-            sync_data_track = tracking['timestamps']  # [0,1,2,3,4,5]  frames / fs
-            sample_rate_frames, img_timestamps = (Tif.SI & (sessions.Session & key)).fetch1(
-                'framerate', 'timestamps_sys')
+            raise NotImplementedError(f'Tracking dataset type {tracking_type} not implemented')
 
-            if np.any(np.diff(img_timestamps) < 0):  # correction for gaps in img-timestamps due to multiple tif files
-                sync_data_frames = img_timestamps.copy()
-                one_frame = 1 / sample_rate_frames
-                gap_ids = np.where(np.diff(sync_data_frames) < 0)[0]
-                gap_ids = np.concatenate([gap_ids, [len(sync_data_frames)-1]])
-                for seg_start, seg_end in zip(gap_ids[:-1], gap_ids[1:]):
-                    sync_data_frames[seg_start+1: seg_end+1] = sync_data_frames[seg_start+1: seg_end+1] + sync_data_frames[seg_start] + one_frame
-            else:
-                sync_data_frames = img_timestamps
+        sync_data_track = (MetaSession.Setup * Setup.Sync
+                            * Sync & f'generic_name = "{tracking_generic}"' & key).fetch1('sync_data')
 
         # Sanity checks
         # 1. Compare length of tracking data and tracking sync data
         # 2. Compare length of spike data and frame sync data 
         # 3. Compare last timestamp frame sync data and tracking sync data
 
-        if len(tracking['x_pos']) != len(sync_data_track):
+        if len(tracking_['x_pos']) != len(sync_data_track):
             raise IndexError('Mismatch between length of sync data and tracking data')
         if len(spikes) != len(sync_data_frames):
             raise IndexError('Mismatch between length of sync data and spiking data')
         if np.abs(sync_data_track[-1] - sync_data_frames[-1]) > np.mean(np.diff(sync_data_frames)):
             raise IndexError('There is more than one frame difference between the end of sync streams')
 
-        # Get seconds to cell to calculate sync sample shift
-        seconds_per_plane = 1 / sample_rate_frames / num_planes
-
         # -> Compensate for the mismatch between timestamp at the beginning of each frame and the time it takes the laser to reach the cell body
+        seconds_per_plane =  1 / (frame_rate_si * num_planes) # from Tif.SI()
+        # Why is this correct? Because frame_rate_si returns the "volume" rate. 
+
         if '2Pmini' in experiment_type:
-            seconds_per_line = (Tif.SI & key).fetch1('seconds_per_line')
+            # Careful! "samples" are floating point (real valued) timestamps for pre-synced setups since 
+            # sample rate = 1. for those sync data
             seconds_to_cell  = center_plane * seconds_per_plane + center_y * seconds_per_line
-            samples_to_cell  = seconds_to_cell * sample_rate_frames # from 'Tif.SI'
-            samples_offset   = samples_to_cell + (st_time_offset * sample_rate_frames) # from 'MapParams'
+            samples_to_cell  = seconds_to_cell * sample_rate_sync 
+            samples_offset   = samples_to_cell + (time_offset * sample_rate_sync) # from 'MapParams'
         else:
             raise NotImplementedError('Cell time finding not implemented for experiment type "{}""'.format(experiment_type))
 
@@ -141,10 +157,9 @@ class ShuffledBVS(dj.Computed):
 
         margin_seconds = shuffle_params['margin_seconds'] 
         break_seconds  = shuffle_params['break_seconds']
-        ### TODO: CORRECT THE FOLLOWING LINE ! 
-        samples_break = np.ceil(break_seconds / (np.diff(sync_data_frames).mean()/sample_rate_frames)).astype(int)
-        sample_from_start = sync_data_frames[0] + (sample_rate_frames * margin_seconds)
-        sample_from_end   = sync_data_frames[-1] - (sample_rate_frames * margin_seconds)
+        samples_break = np.ceil(break_seconds / (np.diff(sync_data_frames).mean()/sample_rate_sync)).astype(int)
+        sample_from_start = sync_data_frames[0] + (sample_rate_sync * margin_seconds)
+        sample_from_end   = sync_data_frames[-1] - (sample_rate_sync * margin_seconds)
         range_start = find_nearest(sync_data_frames, sample_from_start)
         range_end   = find_nearest(sync_data_frames, sample_from_end)
 
@@ -181,7 +196,7 @@ class ShuffledBVS(dj.Computed):
 
             # Look up signal tracking
             signal_dict = calc_signal_dict(rolled_sync_data_frames, sync_data_track,
-                                                    tracking, signal_data, signal_idxs, samples_offset, st_params)
+                                           tracking_, signal_data, signal_idxs, samples_offset, st_params)
 
             # Get ratemap
             try:
@@ -192,14 +207,15 @@ class ShuffledBVS(dj.Computed):
             ratemap_nans =  np.ma.filled(ratemap_dict['ratemap'], fill_value=np.nan).astype(np.float64)
             try:
                 if bvs_field_method == 'opexebo':
-                    _, fields_map = opexebo.analysis.place_field(
-                                        ratemap_nans, min_bins=field_params['min_bins'],
-                                        min_mean=ratemap_dict['ratemap'].max()*field_params['fraction_min_mean'],
-                                        min_peak=ratemap_dict['ratemap'].max()*field_params['fraction_min_peak'],
-                                        init_thresh=field_params['init_thresh'], search_method=field_params['search_method'])
+                    raise NotImplementedError('Field detection method opexebo is not implemented in shuffling')
+                    # _, fields_map = opexebo.analysis.place_field(
+                    #                     ratemap_nans, min_bins=field_params['min_bins'],
+                    #                     min_mean=ratemap_dict['ratemap'].max()*field_params['fraction_min_mean'],
+                    #                     min_peak=ratemap_dict['ratemap'].max()*field_params['fraction_min_peak'],
+                    #                     init_thresh=field_params['init_thresh'], search_method=field_params['search_method'])
 
-                    fieldmap = fields_map.copy()
-                    fieldmap[fieldmap>0] = 1
+                    # fieldmap = fields_map.copy()
+                    # fieldmap[fieldmap>0] = 1
                 elif bvs_field_method == 'bvs':
                     fieldmap, _ = detect_fields(ratemap_nans, minBin=bvs_field_params['min_bin'], \
                                                             std_include=bvs_field_params['std_include'], \
