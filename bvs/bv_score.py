@@ -134,14 +134,26 @@ def calc_bv_score(fieldmap, r=.5, barwidth_max=1, show_plots=False, debug=False)
 
     if show_plots:
         # Draw figure of barMaps at maximum score for horizontal and vertical 
-        figure = plt.figure(figsize=(10,5))
-        ax = figure.add_subplot(121)
+        
+        sns.set(style='white', font_scale=1.2)
+        plt.rcParams['xtick.major.size'] = 5
+        plt.rcParams['xtick.major.width'] = 1
+        plt.rcParams['ytick.major.size'] = 5
+        plt.rcParams['ytick.major.width'] = 1
+        plt.rcParams['xtick.bottom'] = True
+        plt.rcParams['ytick.left'] = True
+
+        figure = plt.figure(figsize=(15,5))
+        ax = figure.add_subplot(131)
+        ax.imshow(fieldmap)
+        ax.set_title('Field map')
+        ax = figure.add_subplot(132)
         ax.imshow(results_x['bar_map'])
         ax.set_title('Horizontal bar max: {:.2f}'.format(results_x['score_x']))
-        ax = figure.add_subplot(122)
+        ax = figure.add_subplot(133)
         ax.imshow(results_y['bar_map'])
         ax.set_title('Vertical bar max: {:.2f}'.format(results_y['score_y']))
-        sns.despine(left=True,bottom=True)
+        sns.despine(left=True, bottom=True)
 
     max_score = np.max([results_x['score_x'], results_y['score_y']])
     
