@@ -62,6 +62,16 @@ class ShuffledBVS(dj.Computed):
         This maintains the underlying signal statistics, and destroys the correspondence
         between signal and tracking data.
         '''    
+        # Try to fetch the occupancy. 
+        # Ideally we should not inherit from Tracking but instead from Occupancy - this would be cleaner
+        # Right now, things run into errors if Occupancy has not been populated 
+
+        try: 
+            occupancy_entry  = (Occupancy & key).fetch1()
+        except dj.DataJointError:
+            print('Occupancy not found. Skipping.')
+            return 
+
 
         bvs_field_method = (BVScoreFieldMethod & key).fetch1('bv_field_dect_method')
         if bvs_field_method not in ['opexebo','bvs']:
@@ -91,7 +101,6 @@ class ShuffledBVS(dj.Computed):
             center_y = int(height_SI/2)
 
         # Ratemap 
-        occupancy_entry  = (Occupancy & key).fetch1()
         ratemap_params   = (MapParams & key).fetch1()
         #field_params     = (FieldParams & key).fetch1() # Skipped for now - opexebo field detection
 
