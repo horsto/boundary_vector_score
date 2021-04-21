@@ -50,7 +50,9 @@ class ShuffledBVS(dj.Computed):
 
     @property
     def key_source(self):
-        return super().key_source & 'bvfield_params_id="A"' & 'bvscore_params_id="A"' & 'bv_field_dect_method="bvs"'
+        return super().key_source & 'bvfield_params_id="A"' \
+             & 'bvscore_params_id="A"' & 'bv_field_dect_method="bvs"' \
+             & 's_t_params_id = "A"'
         # Constrain to some parameters for now 
 
     def make(self,key):

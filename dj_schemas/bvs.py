@@ -54,7 +54,7 @@ class BVField(dj.Computed):
         
     @property
     def key_source(self):
-        return super().key_source  & 'bvfield_params_id = "A"' 
+        return super().key_source  & 'bvfield_params_id = "A"' & 's_t_params_id = "A"'
         # We just want a ratemap + do not care about field detection 
     
     def make(self, key):
@@ -146,7 +146,7 @@ class BVScore(dj.Computed):
     
     @property
     def key_source(self):
-        return super().key_source & 'bvfield_params_id = "A"' 
+        return super().key_source & 'bvfield_params_id = "A"' & 's_t_params_id = "A"'
         # We do not care about other field detection parameters in opexebo right now
         
     def make(self, key):
