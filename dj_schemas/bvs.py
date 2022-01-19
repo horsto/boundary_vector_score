@@ -121,7 +121,7 @@ class BVScore(dj.Computed):
     bvs   = NULL               : double         # Boundary vector score (BVS)
     orientation = NULL         : enum('vertical','horizontal')
     """
-    class Score_X(dj.Part):
+    class ScoreX(dj.Part):
         definition = """
         # Score x (bars spanning X)
         -> master
@@ -132,7 +132,7 @@ class BVScore(dj.Computed):
         ypos_rel       :  float    # relative bar position at maximum (center of bar)
         bar_map        :  blob@imgstore   # barMap (streak of ones) at maximum 
         """
-    class Score_Y(dj.Part):
+    class ScoreY(dj.Part):
         definition = """
         # Score y (bars spanning Y)
         -> master
